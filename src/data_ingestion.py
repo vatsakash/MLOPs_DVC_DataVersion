@@ -3,6 +3,8 @@ import pandas as pd
 import os 
 from sklearn.model_selection import train_test_split
 import logging 
+import yaml
+
 
 
 #ensure the log directories are availaible 
@@ -27,6 +29,25 @@ file_handler.setFormatter(formatter)
 
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
+
+
+def load_param(params_path):
+    """Load parameters from yaml file."""
+    try:
+        with open(params_path,'r') as file:
+            params = yaml.safe_load(file)
+        logger.debug('Parameters retrieved from %s',params_path)
+        print(params)
+        return params
+    except FileNotFoundError as e:
+        logger.error('File Not Found : %s',params_path)
+        raise
+    except Exception as e:
+        logger.error("unexpected error : %s",e)
+        raise
+    except yaml.YAMLError as e:
+        logger.error('YAML error: %s',e)
+        raise
 
 def load_data(data_url):
     """I just load the data from the csv file"""
@@ -72,7 +93,8 @@ def save_data(train_data,test_data,data_path):
     
 def main():
     try:
-        test_size = 0.2
+        params = load_param(params_path='params.yaml')
+        test_size = params['data_ingestion']['test_size']
         data_path = "experiments\spam.csv" 
         print("data is loadng.....")
         df = pd.read_csv(data_path)
